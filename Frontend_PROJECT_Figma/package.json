@@ -1,0 +1,18 @@
+{
+  "name": "smartify-iot-workspace",
+  "private": true,
+  "version": "1.0.0",
+  "workspaces": [
+    "services/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "bootstrap:local": "powershell -ExecutionPolicy Bypass -File ./scripts/bootstrap-local.ps1",
+    "build:api": "npm run build --workspace services/api",
+    "build:web": "npm run build --workspace apps/web",
+    "dev:api": "npm run start:dev --workspace services/api",
+    "dev:web": "npm run dev --workspace apps/web",
+    "seed:api": "npm run seed --workspace services/api",
+    "test:api": "npm run test --workspace services/api"
+  }
+}

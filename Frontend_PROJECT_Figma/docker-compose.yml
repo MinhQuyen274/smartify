@@ -1,0 +1,54 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: smartify-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-smartify}
+      POSTGRES_USER: ${POSTGRES_USER:-smartify}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-smartify}
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-smartify} -d ${POSTGRES_DB:-smartify}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+
+  mosquitto:
+    image: eclipse-mosquitto:2
+    container_name: smartify-mosquitto
+    restart: unless-stopped
+    ports:
+      - "1883:1883"
+      - "9001:9001"
+    volumes:
+      - ./mosquitto/config/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
+      - ./mosquitto/data:/mosquitto/data
+      - ./mosquitto/log:/mosquitto/log
+
+  api:
+    build:
+      context: .
+      dockerfile: ./services/api/Dockerfile
+    container_name: smartify-api
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      mosquitto:
+        condition: service_started
+    env_file:
+      - ./services/api/.env
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-smartify}:${POSTGRES_PASSWORD:-smartify}@postgres:5432/${POSTGRES_DB:-smartify}
+      MQTT_URL: mqtt://mosquitto:1883
+      MQTT_WS_URL: ws://localhost:9001
+      PORT: 3000
+    ports:
+      - "3000:3000"
+
+volumes:
+  postgres-data:

@@ -1,0 +1,11 @@
+node_modules
+**/node_modules
+smartify_flutter/.dart_tool
+smartify_flutter/build
+smartify_flutter/.pub-cache
+apps/web/dist
+services/api/dist
+*.log
+plans
+.idea
+.vscode
